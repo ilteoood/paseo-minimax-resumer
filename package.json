@@ -1,22 +1,22 @@
 {
-  "name": "paseo-minimax-resumer",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "test": "c8 --100 node --experimental-strip-types --test **/*.test.ts",
-    "lint": "biome lint .",
-    "format": "biome format --write .",
-    "check": "biome check --write ."
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.14",
-    "@getpaseo/plugin": "0.8.0",
-    "@getpaseo/protocol": "0.8.0",
-    "@types/node": "^22.20.3",
-    "c8": "^12.0.0",
-    "typescript": "^5.9.3",
-    "zod": "^4.6.5"
-  }
+	"name": "paseo-minimax-resumer",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"test": "c8 --100 node --experimental-strip-types --test **/*.test.ts",
+		"lint": "biome lint .",
+		"format": "biome format --write .",
+		"check": "biome check --write ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.14",
+		"@getpaseo/plugin": "0.8.0",
+		"@getpaseo/protocol": "0.8.0",
+		"@types/node": "^22.20.3",
+		"c8": "^12.0.0",
+		"typescript": "^5.9.3",
+		"zod": "^4.6.5"
+	}
 }

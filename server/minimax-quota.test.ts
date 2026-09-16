@@ -38,109 +38,104 @@ describe("fetchMinimaxResetMs", () => {
 		mock.restoreAll();
 	});
 
-	test("returns null when MINIMAX_API_KEY is absent", async () => {
-		assert.strictEqual(await fetchMinimaxResetMs(), null);
-	});
-
-	test("returns null when fetch throws a network error", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		mock.method(globalThis, "fetch", (): never => {
-			throw new Error("network");
+	describe("without the MINIMAX_API_KEY", () => {
+		test("returns null when MINIMAX_API_KEY is absent", async () => {
+			assert.strictEqual(await fetchMinimaxResetMs(), null);
 		});
-		assert.strictEqual(await fetchMinimaxResetMs(), null);
 	});
 
-	test("returns null when response is not ok", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		stubFetch(false, null);
-		assert.strictEqual(await fetchMinimaxResetMs(), null);
-	});
-
-	test("returns null when res.json() throws", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		stubFetch(true, null, true);
-		assert.strictEqual(await fetchMinimaxResetMs(), null);
-	});
-
-	test("returns null when body does not match schema", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		stubFetch(true, { model_remains: "not-an-array" });
-		assert.strictEqual(await fetchMinimaxResetMs(), null);
-	});
-
-	test("returns null when model_remains is absent", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		stubFetch(true, {});
-		assert.strictEqual(await fetchMinimaxResetMs(), null);
-	});
-
-	test("returns null when model_remains is empty", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		stubFetch(true, { model_remains: [] });
-		assert.strictEqual(await fetchMinimaxResetMs(), null);
-	});
-
-	test("returns null when all timestamps are in the past", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		stubFetch(true, {
-			model_remains: [{ end_time: PAST, weekly_end_time: PAST }],
+	describe("with the MINIMAX_API_KEY", () => {
+		beforeEach(() => {
+			process.env.MINIMAX_API_KEY = "tok";
 		});
-		assert.strictEqual(await fetchMinimaxResetMs(), null);
-	});
 
-	test("returns ms until a future end_time", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		stubFetch(true, { model_remains: [{ end_time: FUTURE_NEAR }] });
-		assert.strictEqual(await fetchMinimaxResetMs(), FUTURE_NEAR - NOW);
-	});
-
-	test("returns ms until weekly_end_time when end_time is in the past", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		stubFetch(true, {
-			model_remains: [{ end_time: PAST, weekly_end_time: FUTURE_FAR }],
+		test("returns null when fetch throws a network error", async () => {
+			mock.method(globalThis, "fetch", (): never => {
+				throw new Error("network");
+			});
+			assert.strictEqual(await fetchMinimaxResetMs(), null);
 		});
-		assert.strictEqual(await fetchMinimaxResetMs(), FUTURE_FAR - NOW);
-	});
 
-	test("returns the earliest of multiple future timestamps across models", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		// first model has far end_time and near weekly; second model has a mid end_time → near wins
-		stubFetch(true, {
-			model_remains: [
-				{ end_time: FUTURE_FAR, weekly_end_time: FUTURE_NEAR },
-				{ end_time: FUTURE_NEAR + 1000 },
-			],
+		test("returns null when response is not ok", async () => {
+			stubFetch(false, null);
+			assert.strictEqual(await fetchMinimaxResetMs(), null);
 		});
-		assert.strictEqual(await fetchMinimaxResetMs(), FUTURE_NEAR - NOW);
-	});
 
-	test("ignores models with no timestamp fields", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		// Model with no fields → both ts values are undefined, skipped; second model provides the reset
-		stubFetch(true, { model_remains: [{}, { end_time: FUTURE_NEAR }] });
-		assert.strictEqual(await fetchMinimaxResetMs(), FUTURE_NEAR - NOW);
-	});
-
-	test("uses MINIMAX_BASE_URL when set", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		process.env.MINIMAX_BASE_URL = "https://custom.example.com";
-		let capturedUrl = "";
-		mock.method(globalThis, "fetch", async (url: string) => {
-			capturedUrl = url;
-			return { ok: true, json: async () => ({ model_remains: [] }) };
+		test("returns null when res.json() throws", async () => {
+			stubFetch(true, null, true);
+			assert.strictEqual(await fetchMinimaxResetMs(), null);
 		});
-		await fetchMinimaxResetMs();
-		assert.match(capturedUrl, /^https:\/\/custom\.example\.com/);
-	});
 
-	test("uses default base URL when MINIMAX_BASE_URL is absent", async () => {
-		process.env.MINIMAX_API_KEY = "tok";
-		let capturedUrl = "";
-		mock.method(globalThis, "fetch", async (url: string) => {
-			capturedUrl = url;
-			return { ok: true, json: async () => ({ model_remains: [] }) };
+		test("returns null when body does not match schema", async () => {
+			stubFetch(true, { model_remains: "not-an-array" });
+			assert.strictEqual(await fetchMinimaxResetMs(), null);
 		});
-		await fetchMinimaxResetMs();
-		assert.match(capturedUrl, /^https:\/\/api\.minimax\.io/);
+
+		test("returns null when model_remains is absent", async () => {
+			stubFetch(true, {});
+			assert.strictEqual(await fetchMinimaxResetMs(), null);
+		});
+
+		test("returns null when model_remains is empty", async () => {
+			stubFetch(true, { model_remains: [] });
+			assert.strictEqual(await fetchMinimaxResetMs(), null);
+		});
+
+		test("returns null when all timestamps are in the past", async () => {
+			stubFetch(true, {
+				model_remains: [{ end_time: PAST, weekly_end_time: PAST }],
+			});
+			assert.strictEqual(await fetchMinimaxResetMs(), null);
+		});
+
+		test("returns ms until a future end_time", async () => {
+			stubFetch(true, { model_remains: [{ end_time: FUTURE_NEAR }] });
+			assert.strictEqual(await fetchMinimaxResetMs(), FUTURE_NEAR - NOW);
+		});
+
+		test("returns ms until weekly_end_time when end_time is in the past", async () => {
+			stubFetch(true, {
+				model_remains: [{ end_time: PAST, weekly_end_time: FUTURE_FAR }],
+			});
+			assert.strictEqual(await fetchMinimaxResetMs(), FUTURE_FAR - NOW);
+		});
+
+		test("returns the earliest of multiple future timestamps across models", async () => {
+			// first model has far end_time and near weekly; second model has a mid end_time → near wins
+			stubFetch(true, {
+				model_remains: [
+					{ end_time: FUTURE_FAR, weekly_end_time: FUTURE_NEAR },
+					{ end_time: FUTURE_NEAR + 1000 },
+				],
+			});
+			assert.strictEqual(await fetchMinimaxResetMs(), FUTURE_NEAR - NOW);
+		});
+
+		test("ignores models with no timestamp fields", async () => {
+			// Model with no fields → both ts values are undefined, skipped; second model provides the reset
+			stubFetch(true, { model_remains: [{}, { end_time: FUTURE_NEAR }] });
+			assert.strictEqual(await fetchMinimaxResetMs(), FUTURE_NEAR - NOW);
+		});
+
+		test("uses MINIMAX_BASE_URL when set", async () => {
+			process.env.MINIMAX_BASE_URL = "https://custom.example.com";
+			let capturedUrl = "";
+			mock.method(globalThis, "fetch", async (url: string) => {
+				capturedUrl = url;
+				return { ok: true, json: async () => ({ model_remains: [] }) };
+			});
+			await fetchMinimaxResetMs();
+			assert.match(capturedUrl, /^https:\/\/custom\.example\.com/);
+		});
+
+		test("uses default base URL when MINIMAX_BASE_URL is absent", async () => {
+			let capturedUrl = "";
+			mock.method(globalThis, "fetch", async (url: string) => {
+				capturedUrl = url;
+				return { ok: true, json: async () => ({ model_remains: [] }) };
+			});
+			await fetchMinimaxResetMs();
+			assert.match(capturedUrl, /^https:\/\/api\.minimax\.io/);
+		});
 	});
 });
