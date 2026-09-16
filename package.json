@@ -16,7 +16,7 @@
 		"@getpaseo/protocol": "0.8.0",
 		"@types/node": "^22.20.3",
 		"c8": "^12.0.0",
-		"typescript": "^5.9.3",
+		"typescript": "^7.0.2",
 		"zod": "^4.6.5"
 	}
 }
