@@ -1,5 +1,5 @@
 {
-	"id": "paseo-resumer",
+	"id": "paseo-minimax-resumer",
 	"requirements": {
 		"paseo": ">=0.8.0"
 	}
