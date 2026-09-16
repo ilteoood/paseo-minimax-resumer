@@ -1,0 +1,6 @@
+{
+  "id": "paseo-resumer",
+  "requirements": {
+    "paseo": ">=0.8.0"
+  }
+}
