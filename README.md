@@ -25,17 +25,7 @@ When using Paseo agents with the Minimax API, hitting rate limits can interrupt 
 Install the plugin as a dev dependency:
 
 ```bash
-npm install --save-dev paseo-minimax-resumer
-```
-
-Then register it in your Paseo configuration:
-
-```json
-{
-  "plugins": [
-    "paseo-minimax-resumer"
-  ]
-}
+paseo plugin add ilteoood/paseo-minimax-resumer
 ```
 
 ## Configuration
@@ -52,23 +42,6 @@ Set the following environment variables:
 3. **Fetches reset time** — Queries the Minimax quota API for the actual reset timestamp
 4. **Schedules resume** — Sets a timer to send a "continue" command at the reset time
 5. **Cleans up** — Manages all pending timers for proper shutdown
-
-## API
-
-### Plugin Export
-
-```typescript
-export default function contribute(server: PluginServerContext)
-```
-
-Contributes rate limit handling to the Paseo server. Returns a cleanup function that clears all pending timers.
-
-### Key Functions
-
-- `fetchMinimaxResetMs()` — Fetches milliseconds until quota reset from Minimax API
-- `msUntilReset(strategy, bufferMinutes)` — Calculates ms until next reset using fallback strategies
-  - `"5h"` strategy — Assumes 5-hour rolling windows
-  - `"weekly"` strategy — Assumes Monday UTC resets
 
 ## Development
 
