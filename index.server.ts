@@ -1,7 +1,7 @@
 import type { PluginServerContext } from "@getpaseo/plugin/server";
 import { latestOutputText } from "./server/inspect.ts";
 import { fetchMinimaxResetMs } from "./server/minimax-quota.ts";
-import { msUntilReset, pendingTimers } from "./server/scheduler.ts";
+import { msUntilReset, pendingAgents } from "./server/scheduler.ts";
 
 const MINIMAX_ERROR_CODE = /\(2056\)/;
 
@@ -12,17 +12,23 @@ export default function contribute(server: PluginServerContext) {
 		const text = latestOutputText(event.timeline);
 		if (!MINIMAX_ERROR_CODE.test(text)) return;
 
+		const agentId = event.agent.id;
+
+		if (pendingAgents.has(agentId)) {
+			console.log(
+				`[paseo-resumer] Agent ${agentId} already has a pending "continue" message. Skipping.`,
+			);
+			return;
+		}
+
 		const apiResetMs = await fetchMinimaxResetMs();
 		const delayMs = apiResetMs ?? msUntilReset("5h", 5);
 		const resetAt = new Date(Date.now() + delayMs).toISOString();
 		console.log(
-			`[paseo-resumer] Rate limit hit on agent ${event.agent.id}. Resuming at ${resetAt}.`,
+			`[paseo-resumer] Rate limit hit on agent ${agentId}. Resuming at ${resetAt}.`,
 		);
 
-		const agentId = event.agent.id;
-
 		const timer = setTimeout(async () => {
-			pendingTimers.delete(timer);
 			try {
 				await context.paseo.agents.ref(agentId).send("continue");
 				console.log(`[paseo-resumer] Sent "continue" to agent ${agentId}.`);
@@ -31,14 +37,16 @@ export default function contribute(server: PluginServerContext) {
 					`[paseo-resumer] Failed to send "continue" to agent ${agentId}:`,
 					err,
 				);
+			} finally {
+				pendingAgents.delete(agentId);
 			}
 		}, delayMs);
 
-		pendingTimers.add(timer);
+		pendingAgents.set(agentId, timer);
 	});
 
 	return () => {
-		for (const timer of pendingTimers) clearTimeout(timer);
-		pendingTimers.clear();
+		for (const timer of pendingAgents.values()) clearTimeout(timer);
+		pendingAgents.clear();
 	};
 }
