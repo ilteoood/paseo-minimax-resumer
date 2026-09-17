@@ -19,16 +19,16 @@ export default function contribute(server: PluginServerContext) {
 			`[paseo-resumer] Rate limit hit on agent ${event.agent.id}. Resuming at ${resetAt}.`,
 		);
 
+		const agentId = event.agent.id;
+
 		const timer = setTimeout(async () => {
 			pendingTimers.delete(timer);
 			try {
-				await context.paseo.agents.ref(event.agent.id).send("continue");
-				console.log(
-					`[paseo-resumer] Sent "continue" to agent ${event.agent.id}.`,
-				);
+				await context.paseo.agents.ref(agentId).send("continue");
+				console.log(`[paseo-resumer] Sent "continue" to agent ${agentId}.`);
 			} catch (err) {
 				console.error(
-					`[paseo-resumer] Failed to send "continue" to agent ${event.agent.id}:`,
+					`[paseo-resumer] Failed to send "continue" to agent ${agentId}:`,
 					err,
 				);
 			}
