@@ -1,7 +1,7 @@
 {
 	"id": "paseo-minimax-resumer",
 	"requirements": {
-		"paseo": ">=0.8.0"
+		"paseo": ">=0.10.0"
 	},
 	"build": [["npm", "ci"]]
 }
