@@ -11,7 +11,7 @@
 		"check": "biome check --write ."
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.14",
+		"@biomejs/biome": "^2.5.15",
 		"@getpaseo/plugin": "0.10.1",
 		"@getpaseo/protocol": "0.10.1",
 		"@types/node": "^22.20.4",
