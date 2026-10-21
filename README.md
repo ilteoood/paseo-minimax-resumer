@@ -5,7 +5,6 @@ A Paseo plugin that automatically handles Minimax API rate limiting by detecting
 ## Overview
 
 When using Paseo agents with the Minimax API, hitting rate limits can interrupt your workflow. **Paseo Minimax Resumer** solves this by:
-
 - **Detecting rate limits** — Watches for Minimax error code 2056 (rate limit exceeded) in agent output
 - **Calculating reset times** — Fetches actual quota reset times from Minimax or uses smart fallback scheduling
 - **Auto-resuming agents** — Automatically sends a "continue" command when the quota window resets
@@ -31,7 +30,6 @@ paseo plugin add ilteoood/paseo-minimax-resumer
 ## Configuration
 
 Set the following environment variables:
-
 - `MINIMAX_API_KEY` — Your Minimax API key (required for accurate quota tracking)
 - `MINIMAX_BASE_URL` — Custom Minimax API base URL (optional, defaults to https://api.minimax.io)
 

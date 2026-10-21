@@ -45,6 +45,18 @@ export default function contribute(server: PluginServerContext) {
 		pendingAgents.set(agentId, timer);
 	});
 
+	server.on("agent.closed", (event) => {
+		const agentId = event.agent.id;
+		if (pendingAgents.has(agentId)) {
+			const timer = pendingAgents.get(agentId);
+			clearTimeout(timer);
+			pendingAgents.delete(agentId);
+			console.log(
+				`[paseo-resumer] Cleared pending "continue" for closed agent ${agentId}.`,
+			);
+		}
+	});
+
 	return () => {
 		for (const timer of pendingAgents.values()) clearTimeout(timer);
 		pendingAgents.clear();
